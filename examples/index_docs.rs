@@ -36,7 +36,13 @@ async fn main() -> anyhow::Result<()> {
 
     // ── Storage ───────────────────────────────────────────────────────────────
 
-    let db: Arc<dyn StorageBackend> = Arc::new(SqliteBackend::open(PathBuf::from(&pinakes_path).as_path())?);
+    // Remove any stale pinakes file so corpus_insert starts fresh each run.
+    let pinakes_pb = PathBuf::from(&pinakes_path);
+    if pinakes_pb.exists() {
+        std::fs::remove_file(&pinakes_pb)?;
+    }
+
+    let db: Arc<dyn StorageBackend> = Arc::new(SqliteBackend::open(pinakes_pb.as_path())?);
 
     // ── Adapter registry ──────────────────────────────────────────────────────
 
