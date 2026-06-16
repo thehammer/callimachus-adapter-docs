@@ -10,12 +10,22 @@ use crate::docc::{DoccDeclaration, DoccInlineNode, DoccPage, DoccReference};
 // ── Inline rendering ──────────────────────────────────────────────────────────
 
 /// Render a slice of inline content nodes to a markdown string.
-pub fn render_inline(nodes: &[DoccInlineNode], references: &HashMap<String, DoccReference>) -> String {
-    nodes.iter().map(|n| n.to_text(references)).collect::<Vec<_>>().join("")
+pub fn render_inline(
+    nodes: &[DoccInlineNode],
+    references: &HashMap<String, DoccReference>,
+) -> String {
+    nodes
+        .iter()
+        .map(|n| n.to_text(references))
+        .collect::<Vec<_>>()
+        .join("")
 }
 
 /// Render a generic `serde_json::Value` inline-content array.
-fn render_inline_value(nodes: &serde_json::Value, references: &HashMap<String, DoccReference>) -> String {
+fn render_inline_value(
+    nodes: &serde_json::Value,
+    references: &HashMap<String, DoccReference>,
+) -> String {
     let arr = match nodes.as_array() {
         Some(a) => a,
         None => return String::new(),
@@ -24,7 +34,11 @@ fn render_inline_value(nodes: &serde_json::Value, references: &HashMap<String, D
         .map(|n| {
             let kind = n.get("type").and_then(|v| v.as_str()).unwrap_or("");
             match kind {
-                "text" => n.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                "text" => n
+                    .get("text")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
                 "codeVoice" => {
                     let code = n.get("code").and_then(|v| v.as_str()).unwrap_or("");
                     format!("`{code}`")
@@ -37,7 +51,11 @@ fn render_inline_value(nodes: &serde_json::Value, references: &HashMap<String, D
                         id.rsplit('/').next().unwrap_or("").to_string()
                     }
                 }
-                _ => n.get("text").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                _ => n
+                    .get("text")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
             }
         })
         .collect::<Vec<_>>()
@@ -51,13 +69,15 @@ fn render_list_item_value(
     references: &HashMap<String, DoccReference>,
     prefix: &str,
 ) -> String {
-    let content_nodes = item.get("content").and_then(|v| v.as_array()).cloned().unwrap_or_default();
-    let item_text = render_content_nodes_value(
-        &serde_json::Value::Array(content_nodes),
-        references,
-    )
-    .trim()
-    .to_string();
+    let content_nodes = item
+        .get("content")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+    let item_text =
+        render_content_nodes_value(&serde_json::Value::Array(content_nodes), references)
+            .trim()
+            .to_string();
 
     let mut out = String::new();
     let mut first = true;
@@ -92,19 +112,28 @@ pub fn render_content_nodes_value(
                 let level = node.get("level").and_then(|v| v.as_u64()).unwrap_or(2);
                 let level = level.max(2) as usize;
                 let hashes = "#".repeat(level);
-                let content = node.get("content").cloned().unwrap_or(serde_json::Value::Array(vec![]));
+                let content = node
+                    .get("content")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Array(vec![]));
                 let text = render_inline_value(&content, references);
                 parts.push(format!("\n{hashes} {text}\n"));
             }
             "paragraph" => {
-                let inline = node.get("inlineContent").cloned().unwrap_or(serde_json::Value::Array(vec![]));
+                let inline = node
+                    .get("inlineContent")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Array(vec![]));
                 let text = render_inline_value(&inline, references);
                 parts.push(format!("\n{text}\n"));
             }
             "aside" => {
                 let style = node.get("style").and_then(|v| v.as_str()).unwrap_or("note");
                 let style = capitalize_first(style);
-                let content = node.get("content").cloned().unwrap_or(serde_json::Value::Array(vec![]));
+                let content = node
+                    .get("content")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Array(vec![]));
                 let inner = render_content_nodes_value(&content, references);
                 let inner = inner.trim().to_string();
                 let quoted: String = inner
@@ -121,7 +150,10 @@ pub fn render_content_nodes_value(
                 parts.push(format!("\n> **{style}:**\n{quoted}\n"));
             }
             "codeListing" => {
-                let syntax = node.get("syntax").and_then(|v| v.as_str()).unwrap_or("swift");
+                let syntax = node
+                    .get("syntax")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("swift");
                 let syntax = if syntax.is_empty() { "swift" } else { syntax };
                 let code_lines: Vec<String> = node
                     .get("code")
@@ -137,7 +169,11 @@ pub fn render_content_nodes_value(
                 parts.push(format!("\n```{syntax}\n{code}\n```\n"));
             }
             "unorderedList" => {
-                let items = node.get("items").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                let items = node
+                    .get("items")
+                    .and_then(|v| v.as_array())
+                    .cloned()
+                    .unwrap_or_default();
                 let mut list_parts = String::from("\n");
                 for item in &items {
                     list_parts.push_str(&render_list_item_value(item, references, "-"));
@@ -145,7 +181,11 @@ pub fn render_content_nodes_value(
                 parts.push(list_parts);
             }
             "orderedList" => {
-                let items = node.get("items").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                let items = node
+                    .get("items")
+                    .and_then(|v| v.as_array())
+                    .cloned()
+                    .unwrap_or_default();
                 let mut list_parts = String::from("\n");
                 for (i, item) in items.iter().enumerate() {
                     let prefix = format!("{}.", i + 1);
@@ -155,7 +195,11 @@ pub fn render_content_nodes_value(
             }
             "links" => {
                 // Render as plain text list — no link resolution in v1/v2 markdown output.
-                let items = node.get("items").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+                let items = node
+                    .get("items")
+                    .and_then(|v| v.as_array())
+                    .cloned()
+                    .unwrap_or_default();
                 for item in &items {
                     let id = item
                         .as_str()
@@ -170,12 +214,18 @@ pub fn render_content_nodes_value(
             }
             _ => {
                 // Best-effort fallback: try inlineContent, then recurse into content.
-                let inline = node.get("inlineContent").cloned().unwrap_or(serde_json::Value::Array(vec![]));
+                let inline = node
+                    .get("inlineContent")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Array(vec![]));
                 if !inline.as_array().map(|a| a.is_empty()).unwrap_or(true) {
                     let text = render_inline_value(&inline, references);
                     parts.push(format!("\n{text}\n"));
                 }
-                let content = node.get("content").cloned().unwrap_or(serde_json::Value::Array(vec![]));
+                let content = node
+                    .get("content")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Array(vec![]));
                 if !content.as_array().map(|a| a.is_empty()).unwrap_or(true) {
                     parts.push(render_content_nodes_value(&content, references));
                 }
@@ -205,7 +255,11 @@ pub fn render_declaration(page: &DoccPage) -> String {
 }
 
 fn render_declaration_tokens(decl: &DoccDeclaration) -> String {
-    decl.tokens.iter().map(|t| t.text.as_str()).collect::<Vec<_>>().join("")
+    decl.tokens
+        .iter()
+        .map(|t| t.text.as_str())
+        .collect::<Vec<_>>()
+        .join("")
 }
 
 /// Render the Discussion section (primaryContentSections of kind "content").
@@ -282,7 +336,10 @@ pub fn render_page(page: &DoccPage, framework: &str, url: &str) -> String {
 }
 
 /// Render the Discussion prose for a single content section (for section-grain chunks).
-pub fn render_section_content(content: &serde_json::Value, references: &HashMap<String, DoccReference>) -> String {
+pub fn render_section_content(
+    content: &serde_json::Value,
+    references: &HashMap<String, DoccReference>,
+) -> String {
     render_content_nodes_value(content, references)
 }
 

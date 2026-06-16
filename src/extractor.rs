@@ -69,8 +69,7 @@ pub fn identifier_to_entity_id(
     references: &HashMap<String, DoccReference>,
     framework_hint: &str,
 ) -> Option<String> {
-    let stripped =
-        identifier.strip_prefix("doc://com.apple.documentation/documentation/")?;
+    let stripped = identifier.strip_prefix("doc://com.apple.documentation/documentation/")?;
 
     let (framework_id, _rest) = stripped.split_once('/')?;
 
@@ -218,8 +217,7 @@ pub fn extract_structure(
             "conformsTo" => "conforms_to",
             _ => continue,
         };
-        let Some(to_id) =
-            identifier_to_entity_id(&rel.target, &page.references, framework_hint)
+        let Some(to_id) = identifier_to_entity_id(&rel.target, &page.references, framework_hint)
         else {
             continue;
         };
@@ -257,8 +255,7 @@ pub fn extract_structure(
                 if id.is_empty() {
                     continue;
                 }
-                let Some(to_id) =
-                    identifier_to_entity_id(id, &page.references, framework_hint)
+                let Some(to_id) = identifier_to_entity_id(id, &page.references, framework_hint)
                 else {
                     continue;
                 };

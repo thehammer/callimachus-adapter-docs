@@ -24,9 +24,7 @@ async fn main() -> anyhow::Result<()> {
     // ── Args ──────────────────────────────────────────────────────────────────
 
     let mut args = std::env::args().skip(1);
-    let source_dir = args
-        .next()
-        .unwrap_or_else(|| "tests/fixtures".to_string());
+    let source_dir = args.next().unwrap_or_else(|| "tests/fixtures".to_string());
     let pinakes_path = args
         .next()
         .unwrap_or_else(|| "/tmp/apple-docs-example.pinakes".to_string());
@@ -49,7 +47,9 @@ async fn main() -> anyhow::Result<()> {
     let mut registry = AdapterRegistry::new();
     // Use `with_root` so the Structure pass can reconstruct the JSON file path
     // from each chunk's location URI (docs/<Framework>/<Slug>).
-    registry.register(Arc::new(callimachus_adapter_docs::DocsAdapter::with_root(&source_dir)));
+    registry.register(Arc::new(callimachus_adapter_docs::DocsAdapter::with_root(
+        &source_dir,
+    )));
 
     let adapter = registry
         .get("docs")
@@ -98,12 +98,16 @@ async fn main() -> anyhow::Result<()> {
     // ── Assert populated index ────────────────────────────────────────────────
 
     if result.total_entities == 0 {
-        eprintln!("\nERROR: index is empty (0 entities). Check that the source directory contains valid DocC JSON files.");
+        eprintln!(
+            "\nERROR: index is empty (0 entities). Check that the source directory contains valid DocC JSON files."
+        );
         std::process::exit(1);
     }
 
     if result.total_edges == 0 {
-        eprintln!("\nERROR: index has no edges (0 edges). The Structure pass should produce inherits_from / conforms_to / member_of edges for DocC JSON with relationships.");
+        eprintln!(
+            "\nERROR: index has no edges (0 edges). The Structure pass should produce inherits_from / conforms_to / member_of edges for DocC JSON with relationships."
+        );
         std::process::exit(1);
     }
 

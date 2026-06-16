@@ -98,7 +98,10 @@ pub fn chunk_docs_file(
         if section.get("kind").and_then(|v| v.as_str()) != Some("content") {
             continue;
         }
-        let content = section.get("content").cloned().unwrap_or(serde_json::Value::Array(vec![]));
+        let content = section
+            .get("content")
+            .cloned()
+            .unwrap_or(serde_json::Value::Array(vec![]));
         let rendered = render::render_section_content(&content, &page.references);
         if rendered.trim().is_empty() {
             continue;

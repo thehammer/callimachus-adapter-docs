@@ -153,9 +153,8 @@ impl SourceAdapter for DocsAdapter {
             .join(relative)
             .with_extension("json");
 
-        let raw_text = std::fs::read_to_string(&json_path).map_err(|e| {
-            anyhow::anyhow!("failed to read {}: {e}", json_path.display())
-        })?;
+        let raw_text = std::fs::read_to_string(&json_path)
+            .map_err(|e| anyhow::anyhow!("failed to read {}: {e}", json_path.display()))?;
         let raw: serde_json::Value = serde_json::from_str(&raw_text)?;
         let page = DoccPage::from_value(&raw);
 

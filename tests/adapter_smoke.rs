@@ -1,9 +1,9 @@
+use callimachus_adapter_contract::{DiscoveredSource, SourceAdapter};
 /// Smoke test for the DocsAdapter.
 ///
 /// Loads the three handwritten DocC JSON fixture files, calls discover → chunk →
 /// extract_structure, and asserts entity kinds, edge kinds, and parent/child membership.
 use callimachus_adapter_docs::{DocsAdapter, adapter::extract_from_source};
-use callimachus_adapter_contract::{DiscoveredSource, SourceAdapter};
 use std::path::Path;
 
 fn fixtures_dir() -> std::path::PathBuf {
@@ -83,9 +83,7 @@ async fn nsview_entity_is_class_with_edges() {
         }),
     };
 
-    let (chunks, structure) = extract_from_source(&source)
-        .await
-        .expect("extract failed");
+    let (chunks, structure) = extract_from_source(&source).await.expect("extract failed");
 
     // Must produce chunks.
     assert!(!chunks.is_empty());
@@ -159,9 +157,7 @@ async fn nsview_tag_entity_is_property_with_availability() {
         }),
     };
 
-    let (_chunks, structure) = extract_from_source(&source)
-        .await
-        .expect("extract failed");
+    let (_chunks, structure) = extract_from_source(&source).await.expect("extract failed");
 
     let entity = structure
         .structural_entities
@@ -194,9 +190,7 @@ async fn nsstackview_inherits_nsview_conforms_two_protocols() {
         }),
     };
 
-    let (_chunks, structure) = extract_from_source(&source)
-        .await
-        .expect("extract failed");
+    let (_chunks, structure) = extract_from_source(&source).await.expect("extract failed");
 
     let inherits_edges: Vec<_> = structure
         .structural_edges
@@ -209,8 +203,7 @@ async fn nsstackview_inherits_nsview_conforms_two_protocols() {
         "NSStackView should have exactly 1 inherits_from edge"
     );
     assert_eq!(
-        inherits_edges[0].to_entity_id,
-        "docs:docs/AppKit/NSView",
+        inherits_edges[0].to_entity_id, "docs:docs/AppKit/NSView",
         "NSStackView inherits_from target must exactly equal the NSView page entity ID"
     );
 
@@ -234,10 +227,7 @@ async fn extract_structure_via_trait_path() {
     // Build the adapter with a root path so extract_structure can read the JSON files.
     let adapter = DocsAdapter::with_root(dir_str);
 
-    let mut sources = adapter
-        .discover(dir_str)
-        .await
-        .expect("discover failed");
+    let mut sources = adapter.discover(dir_str).await.expect("discover failed");
 
     // Inject corpus_id; sort for determinism.
     sources.sort_by(|a, b| a.path.cmp(&b.path));
@@ -251,10 +241,7 @@ async fn extract_structure_via_trait_path() {
         .find(|s| s.path.ends_with("NSView.json"))
         .expect("NSView.json source not found");
 
-    let chunks = adapter
-        .chunk(nsview_source)
-        .await
-        .expect("chunk failed");
+    let chunks = adapter.chunk(nsview_source).await.expect("chunk failed");
 
     let page_chunk = chunks
         .iter()
